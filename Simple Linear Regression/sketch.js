@@ -1,6 +1,7 @@
 // Carla de Beer
 // Created: April 2018.
-// Simple regression exercise with P5js and the Tensorflow.js API (based on the Tensorflow.js example).
+// Simple regression exercise with P5js and the Tensorflow.js layers API. 
+// Based on the Tensorflow.js example.
 
 const rad = 8;
 
@@ -14,7 +15,7 @@ function setup() {
     inputShape: [1]
   }));
 
-  // Prepare the model for training: Specify the loss and the optimizer.
+  // Prepare the model for training: specify the loss function and optimizer.
   model.compile({
     loss: "meanSquaredError",
     optimizer: "sgd"
@@ -26,33 +27,35 @@ function setup() {
   const xs = tf.tensor2d(list1, [4, 1]);
   const ys = tf.tensor2d(list2, [4, 1]);
 
-  for (let i = 0; i < 4; ++i) {
-    stroke(100);
-    strokeWeight(2.5);
-    noFill();
-    ellipse(list1[i] * 50, list2[i] * 50, rad, rad);
-    noStroke();
-    fill(100);
-    text(i + 1, list1[i] * 50 + 8, list2[i] * 50 + 5);
-    text(`(${list1[i]}, ${list2[i]})`, list1[i] * 50 + 20, list2[i] * 50 + 5);
-  }
-
-  stroke(100);
-  strokeWeight(0.5);
-  for (let i = 0; i < 5; ++i) {
-    line(list1[i] * 50, list2[i] * 50, list1[i + 1] * 50, list2[i + 1] * 50);
-  }
-  noStroke();
-
   let resY = 0;
   // Train the model using the data.
   model.fit(xs, ys).then(() => {
     // Use the model to do inference on a data point the model hasn't seen before:
     let result = model.predict(tf.tensor2d([5], [1, 1]));
-    result.print();
+    //result.print();
     resY = result.dataSync()[0];
-    console.log(resY);
+    console.log("Predicted result: " + resY);
 
+    // Draw the data points
+    for (let i = 0; i < 4; ++i) {
+      stroke(100);
+      strokeWeight(2.5);
+      noFill();
+      ellipse(list1[i] * 50, list2[i] * 50, rad, rad);
+      noStroke();
+      fill(100);
+      text(i + 1, list1[i] * 50 + 8, list2[i] * 50 + 5);
+      text(`(${list1[i]}, ${list2[i]})`, list1[i] * 50 + 20, list2[i] * 50 + 5);
+    }
+
+    // Draw the line connecting the data points
+    stroke(100);
+    strokeWeight(0.5);
+    for (let i = 0; i < 5; ++i) {
+      line(list1[i] * 50, list2[i] * 50, list1[i + 1] * 50, list2[i + 1] * 50);
+    }
+
+    // Draw the predicted results and text
     let lastX = list1[3] + 1;
     stroke(200, 0, 0);
     strokeWeight(2.5);
@@ -68,5 +71,13 @@ function setup() {
     let error = 9 - resY;
     fill(100);
     text(`Error: ${error}`, 20, height - 20);
+
+    xs.dispose();
+    ys.dispose();
+    result.dispose();
+
   });
+
+  console.log("Number of tensors: " + tf.memory().numTensors);
+
 }
