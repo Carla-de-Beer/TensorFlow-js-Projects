@@ -13,6 +13,7 @@ let xs, ys;
 let lossP, labelP, trainingP;
 let rSlider, gSlider, bSlider;
 let r, g, b;
+const numEpochs = 20;
 
 let labelList = [
   "black", "white"
@@ -20,13 +21,32 @@ let labelList = [
 
 function setup() {
   createCanvas(600, 300);
+
   lossP = createP("Loss: ");
   labelP = createP("Prediction: ");
   trainingP = createP();
 
+  // Add sliders
+  let group = createDiv("");
+  group.position(50, 475);
   rSlider = createSlider(0, 255, floor(random(255)));
+  rSlider.parent(group);
+  let label = createSpan("Red");
+  label.parent(group);
+
+  let group2 = createDiv("");
+  group2.position(50, 510);
   gSlider = createSlider(0, 255, floor(random(255)));
+  gSlider.parent(group2);
+  let label2 = createSpan("Green");
+  label2.parent(group2);
+
+  let group3 = createDiv("");
+  group3.position(50, 545);
   bSlider = createSlider(0, 255, floor(random(255)));
+  bSlider.parent(group3);
+  let label3 = createSpan("Blue");
+  label3.parent(group3);
 
   let colors = [];
   let labels = [];
@@ -96,20 +116,24 @@ function setup() {
 // Training Function
 async function train() {
   const options = {
-    epochs: 2,
+    epochs: numEpochs,
     validationSplit: 0.1,
     shuffle: true,
     callbacks: {
-      onTrainBegin: () => console.log("Training: started ..."),
+      onTrainBegin: () => {
+        trainingP.html("Training: started ...");
+        console.log("Training: started ...")
+      },
       onTrainEnd: () => {
         trainingP.html("Training: completed");
         console.log("Training: completed.")
       },
       onBatchEnd: tf.nextFrame,
       onEpochEnd: (num, logs) => {
-        console.log("Epoch: " + num);
-        console.log("Loss: " + logs.loss);
-        lossP.html("Loss: " + logs.loss);
+        console.log(`Epoch: ${num}`);
+        console.log(`Loss: ${logs.loss}`);
+        lossP.html(`Loss: ${logs.loss}`);
+        trainingP.html(`Epoch: ${num + 1}/${numEpochs}`);
       }
     }
   }
@@ -161,8 +185,8 @@ function draw() {
     }
 
     winner = tf.softmax(results).dataSync()[index];
-    console.log(`softmax: ${tf.softmax(results).dataSync()}`);
-    console.log(`argMax: ${index}`);
+    //console.log(`softmax: ${tf.softmax(results).dataSync()}`);
+    //console.log(`argMax: ${index}`);
 
     textSize(12);
     fill(col);
